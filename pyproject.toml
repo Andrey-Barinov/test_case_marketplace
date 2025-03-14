@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "test-case-marketplace"
+version = "0.1.0"
+description = ""
+authors = ["Andrey Barinov <barbpro89@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastapi = {extras = ["standard"], version = "^0.115.11"}
+pydantic-settings = "^2.8.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.10.0"
+pre-commit = "^4.1.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
