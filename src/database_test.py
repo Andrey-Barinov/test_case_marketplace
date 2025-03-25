@@ -10,7 +10,6 @@ async_session = sessionmaker(
 
 
 async def get_test_async_session() -> AsyncSession:
-    # Создаем новую сессию каждый раз
     new_session = async_session()
     try:
         yield new_session

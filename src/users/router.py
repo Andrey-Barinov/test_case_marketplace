@@ -16,7 +16,6 @@ async def register_user(
     new_user: UserRegisterSchema,
     session: AsyncSession = Depends(get_async_session),
 ):
-    # Предварительно проверяем уникальность телефона и email
     phone_query = select(User).where(User.phone_number == new_user.phone_number)
     phone_result = await session.execute(phone_query)
     if phone_result.scalar_one_or_none():
@@ -29,7 +28,6 @@ async def register_user(
     if email_result.scalar_one_or_none():
         raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
 
-    # Создаем пользователя
     db_user = User(
         email=new_user.email,
         phone_number=new_user.phone_number,

@@ -20,6 +20,7 @@ passlib = "^1.7.4"
 celery = "^5.4.0"
 rabbitmq = "^0.2.0"
 python-jose = {extras = ["cryptography"], version = "^3.4.0"}
+aioboto3 = "^14.1.0"
 
 
 [tool.poetry.group.dev.dependencies]

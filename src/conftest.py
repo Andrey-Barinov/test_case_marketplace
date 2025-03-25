@@ -27,7 +27,7 @@ def apply_migrations():
     # Применяем миграции
     alembic_config = Config("alembic.ini")
     alembic_config.set_main_option(
-        "sqlalchemy.url", test_settings.ALEMBIC_DATABASE_URL
+        "sqlalchemy.url", test_settings.TEST_ALEMBIC_DATABASE_URL
     )
     command.upgrade(alembic_config, "head")
 
@@ -52,11 +52,9 @@ async def test_user():
 
 @pytest.fixture
 async def async_client():
-    # Используем контекстный менеджер для правильного закрытия клиента
     async with AsyncClient(
         transport=ASGITransport(app=app),
         base_url="http://127.0.0.1",
         follow_redirects=True,
     ) as ac:
         yield ac
-    # После yield клиент автоматически закроется

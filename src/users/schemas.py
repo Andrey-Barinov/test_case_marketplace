@@ -50,9 +50,9 @@ class UserRegisterSchema(BaseModel):
         return value
 
     @field_validator("password_confirm")
-    def passwords_match(cls, value, values):
+    def passwords_match(cls, value, info):
         """Проверка совпадения паролей"""
-        if "password" in values and value != values["password"]:
+        if "password" in info.data and value != info.data["password"]:
             raise ValueError("Пароли не совпадают")
         return value
 

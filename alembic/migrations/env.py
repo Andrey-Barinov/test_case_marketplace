@@ -3,7 +3,10 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from src.database import Base
 from src.users.models import User # noqa
+from src.articles.models import Article # noqa
+from src.categories.models import Category # noqa
 from alembic import context
+from src.settings import settings
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -38,7 +41,7 @@ def run_migrations_offline(include_schemas=True) -> None:
     script output.
 
     """
-    url = config.get_main_option("sqlalchemy.url")
+    url = config.set_main_option("sqlalchemy.url", settings.ALEMBIC_DATABASE_URL)
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -57,6 +60,8 @@ def run_migrations_online(include_schemas=True) -> None:
     and associate a connection with the context.
 
     """
+    config.set_main_option("sqlalchemy.url", settings.ALEMBIC_DATABASE_URL)
+
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",

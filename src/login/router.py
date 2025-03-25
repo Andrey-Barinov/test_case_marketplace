@@ -12,7 +12,7 @@ from src.users.models import User
 
 from .schemas import Token
 
-router = APIRouter()
+router = APIRouter(tags=["Login"])
 
 
 # Функция для получения пользователя из базы
@@ -78,10 +78,10 @@ async def login(
     response.set_cookie(
         key="access_token",
         value=access_token,
-        httponly=True,  # Доступен только для сервера
-        secure=True,  # Использовать только по HTTPS
-        samesite="Lax",  # Политика SameSite
-        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,  # Время жизни
+        httponly=True,
+        secure=True,
+        samesite="Lax",
+        max_age=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60,
     )
 
     return {"access_token": access_token, "token_type": "bearer"}
