@@ -16,17 +16,19 @@ async def register_user(
     new_user: UserRegisterSchema,
     session: AsyncSession = Depends(get_async_session),
 ):
+    email_query = select(User).where(User.email == new_user.email)
+    email_result = await session.execute(email_query)
+    if email_result.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400, detail="Такой email уже существует"
+        )
+
     phone_query = select(User).where(User.phone_number == new_user.phone_number)
     phone_result = await session.execute(phone_query)
     if phone_result.scalar_one_or_none():
         raise HTTPException(
-            status_code=400, detail="Телефон уже зарегистрирован"
+            status_code=400, detail="Такой телефон уже существует"
         )
-
-    email_query = select(User).where(User.email == new_user.email)
-    email_result = await session.execute(email_query)
-    if email_result.scalar_one_or_none():
-        raise HTTPException(status_code=400, detail="Email уже зарегистрирован")
 
     db_user = User(
         email=new_user.email,
@@ -37,5 +39,7 @@ async def register_user(
     session.add(db_user)
     await session.commit()
     await session.refresh(db_user)
+
     send_email_after_successful_registration.delay(db_user.email)
+
     return db_user

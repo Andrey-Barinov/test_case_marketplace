@@ -10,9 +10,9 @@ services:
       POSTGRES_DB: postgres
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      interval: 7s
+      timeout: 7s
+      retries: 7
 
   rabbitmq:
     image: rabbitmq:3-management

@@ -8,8 +8,6 @@ class Settings(BaseSettings):
 
     PROD_DATABASE_URL: str
 
-    ALEMBIC_DATABASE_URL: str
-
     CELERY_BROKER_URL: str
 
     SMTP_SERVER: str

@@ -5,8 +5,9 @@ from httpx import ASGITransport, AsyncClient
 
 from alembic import command
 from alembic.config import Config
-from src.main import app  # Импортируем приложение FastAPI
-from src.users.models import User  # Импортируем модель пользователя
+from src.categories.models import Category
+from src.main import app
+from src.users.models import User
 
 from .database import get_async_session
 from .database_test import get_test_async_session
@@ -32,9 +33,15 @@ def apply_migrations():
     command.upgrade(alembic_config, "head")
 
 
-# Фикстура для создания тестового пользователя
+@pytest.fixture
+async def test_session():
+    async for session in get_test_async_session():
+        yield session
+
+
 @pytest.fixture(scope="session")
 async def test_user():
+    """Фикстура для создания тестового пользователя"""
     async for session in get_test_async_session():
         password = "testpassword"
         db_user = User(
@@ -50,6 +57,20 @@ async def test_user():
         return db_user
 
 
+@pytest.fixture(scope="session", autouse=True)
+async def test_category():
+    """Фикстура для создания тестовой категории"""
+    async for session in get_test_async_session():
+        db_category = Category(
+            title="test_category",
+        )
+
+        session.add(db_category)
+        await session.commit()
+        await session.refresh(db_category)
+        return db_category
+
+
 @pytest.fixture
 async def async_client():
     async with AsyncClient(
@@ -58,3 +79,23 @@ async def async_client():
         follow_redirects=True,
     ) as ac:
         yield ac
+
+
+@pytest.fixture(scope="function")
+async def authenticated_client(async_client: AsyncClient, test_user: User):
+    """Фикстура для аутентифицированного клиента"""
+    login_response = await async_client.post(
+        "/login/",
+        data={"username": test_user.email, "password": "testpassword"},
+    )
+
+    assert login_response.status_code == 200
+    access_token = login_response.cookies.get("access_token")
+
+    # Убедимся, что токен получен
+    assert access_token is not None
+
+    # Устанавливаем этот токен в куки для последующих запросов
+    async_client.cookies.set("access_token", access_token)
+
+    return async_client

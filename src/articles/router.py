@@ -90,6 +90,15 @@ async def create_article(
     image: UploadFile = File(...),
     session: AsyncSession = Depends(get_async_session),
 ):
+    title_query = select(Article).where(Article.title == new_article.title)
+    title = await session.execute(title_query)
+    if title.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400,
+            detail=f"Статья с таким названием"
+            f" {new_article.title} уже существует!",
+        )
+
     await ImageValidator.validate_image(image)
 
     category_id_query = select(Category).where(
@@ -99,29 +108,24 @@ async def create_article(
     if not category_id_query.scalar_one_or_none():
         raise HTTPException(
             status_code=400,
-            detail=f"Категория с таким id"
-            f" {new_article.category_id} не существует!",
+            detail=f"Категория с id {new_article.category_id} не существует!",
         )
 
-    try:
-        # Загружаем изображение в MinIO
-        image_url = await upload_image_to_s3(image)
+    # Загружаем изображение в MinIO
+    image_url = await upload_image_to_s3(image)
 
-        db_new_article = Article(
-            title=new_article.title,
-            content=new_article.content,
-            category_id=new_article.category_id,
-            image_url=image_url,
-        )
+    db_new_article = Article(
+        title=new_article.title,
+        content=new_article.content,
+        category_id=new_article.category_id,
+        image_url=image_url,
+    )
 
-        session.add(db_new_article)
-        await session.commit()
-        await session.refresh(db_new_article)
+    session.add(db_new_article)
+    await session.commit()
+    await session.refresh(db_new_article)
 
-        return db_new_article
-    except Exception as e:
-        await session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+    return db_new_article
 
 
 @router.put("/{article_id}", response_model=ArticleResponse)
@@ -189,7 +193,7 @@ async def update_article(
         )
 
 
-@router.delete("/articles/{id}")
+@router.delete("/{id}")
 async def delete_article_from_table_articles_insert_into_table_deleted_articles(
     id: int, session: AsyncSession = Depends(get_async_session)
 ):

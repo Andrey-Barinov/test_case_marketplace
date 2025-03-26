@@ -29,7 +29,8 @@ async def create_category(
     if title.scalar_one_or_none():
         raise HTTPException(
             status_code=400,
-            detail=f"Категория с таким {new_category.title} уже существует!",
+            detail=f"Категория с таким названием"
+            f" {new_category.title} уже существует!",
         )
 
     db_new_category = Category(

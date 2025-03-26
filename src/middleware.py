@@ -30,7 +30,7 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
         if not token:
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"detail": "Missing access token"},
+                content={"detail": "Отсутствует токен доступа"},
             )
 
         try:
@@ -41,7 +41,10 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
         except JWTError:
             return JSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
-                content={"detail": "Invalid or expired token"},
+                content={
+                    "detail": "Токен недействителен или"
+                    " срок действия которого истек"
+                },
             )
 
         return await call_next(request)

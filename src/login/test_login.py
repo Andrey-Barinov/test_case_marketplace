@@ -1,9 +1,8 @@
 from httpx import AsyncClient
 
-from src.users.models import User  # Импортируем модель пользователя
+from src.users.models import User
 
 
-# ✅ Тест успешного входа
 async def test_login_success(async_client: AsyncClient, test_user: User):
     response = await async_client.post(
         "/login/",
@@ -14,12 +13,7 @@ async def test_login_success(async_client: AsyncClient, test_user: User):
     json_response = response.json()
     assert "access_token" in json_response
     assert json_response["token_type"] == "bearer"
-    assert (
-        response.cookies.get("access_token") is not None
-    )  # Проверяем установку cookie
-
-
-# ❌ Тест ошибки при вводе неверного пароля
+    assert response.cookies.get("access_token") is not None
 
 
 async def test_login_wrong_password(async_client: AsyncClient, test_user: User):
@@ -29,10 +23,10 @@ async def test_login_wrong_password(async_client: AsyncClient, test_user: User):
     )
 
     assert response.status_code == 401
-    assert response.json()["detail"] == "Incorrect email or password"
-
-
-# ❌ Тест ошибки при вводе несуществующего пользователя
+    assert (
+        response.json()["detail"]
+        == "Неверный адрес электронной почты или пароль"
+    )
 
 
 async def test_login_nonexistent_user(async_client: AsyncClient):
@@ -45,4 +39,14 @@ async def test_login_nonexistent_user(async_client: AsyncClient):
     )
 
     assert response.status_code == 401
-    assert response.json()["detail"] == "Incorrect email or password"
+    assert (
+        response.json()["detail"]
+        == "Неверный адрес электронной почты или пароль"
+    )
+
+
+async def test_logout_success(authenticated_client: AsyncClient):
+    response = await authenticated_client.post("/logout/")
+
+    assert response.status_code == 200
+    assert response.cookies.get("access_token") is None
